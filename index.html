@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leitor CNAB 444 - Baseado no Manual</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #1565C0;
+      --primary-light: #e3f2fd;
+      --primary-dark: #0D47A1;
+      --secondary-color: #0288D1;
+      --accent-color: #29B6F6;
+      --background-color: #f5f9ff;
+      --card-background: #ffffff;
+      --text-color: #333333;
+      --text-secondary: #757575;
+      --border-color: #E0E0E0;
+      --success-color: #4CAF50;
+      --error-color: #F44336;
+      --warning-color: #FFC107;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .upload-area {
+      background-color: var(--card-background);
+      border: 2px dashed var(--primary-color);
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 30px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .upload-area:hover {
+      border-color: var(--secondary-color);
+      background-color: var(--primary-light);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--accent-color);
+      background-color: var(--primary-light);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: var(--text-color);
+    }
+
+    .upload-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .feedback {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      display: none;
+      align-items: center;
+    }
+
+    .feedback.success {
+      background-color: rgba(76, 175, 80, 0.1);
+      border-left: 4px solid var(--success-color);
+      color: var(--success-color);
+    }
+
+    .feedback.error {
+      background-color: rgba(244, 67, 54, 0.1);
+      border-left: 4px solid var(--error-color);
+      color: var(--error-color);
+    }
+
+    .feedback i {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loader-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary-color);
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .output-section {
+      margin-top: 30px;
+      display: none;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+      white-space: nowrap;
+      color: var(--text-secondary);
+    }
+
+    .tab:hover {
+      color: var(--primary-color);
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .info-card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .info-card h3 {
+      color: var(--primary-color);
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    .info-value {
+      color: var(--text-color);
+      font-weight: 400;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-background);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 500;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .action-button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-button.primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .action-button.primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .action-button.secondary {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    .action-button.secondary:hover {
+      background-color: var(--primary-light);
+    }
+
+    .filters {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .filter-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .filter-input, .filter-select {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+      gap: 10px;
+    }
+
+    .pagination button {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      color: var(--primary-color);
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background-color: var(--primary-light);
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination .active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .page-info {
+      margin: 0 15px;
+      color: var(--text-secondary);
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .highlight {
+      background-color: var(--warning-color);
+      color: var(--text-color);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .upload-area {
+        padding: 25px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-group {
+        min-width: 100%;
+      }
+
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .upload-text {
+        font-size: 1rem;
+      }
+
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>📄 Leitor CNAB 444</h1>
+      <p>Ferramenta para leitura e análise de arquivos CNAB 444 - Baseado no Manual FIDC</p>
+    </header>
+
+    <div class="feedback" id="feedback">
+      <i class="material-icons"></i>
+      <span></span>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <i class="material-icons upload-icon">cloud_upload</i>
+      <p class="upload-text">Arraste e solte um arquivo CNAB 444 aqui ou clique para selecionar</p>
+      <button class="upload-button" id="uploadButton">
+        <i class="material-icons">file_upload</i>
+        Selecionar Arquivo
+      </button>
+      <input type="file" id="fileInput" accept=".txt,.rem,.REM">
+    </div>
+
+    <div class="loader" id="loader">
+      <div class="loader-spinner"></div>
+      <p>Processando arquivo...</p>
+    </div>
+
+    <div class="output-section" id="outputSection">
+      <div class="action-buttons">
+        <button class="action-button secondary" id="clearButton">
+          <i class="material-icons">clear</i>
+          Limpar Dados
+        </button>
+        <button class="action-button primary" id="exportButton">
+          <i class="material-icons">download</i>
+          Exportar CSV
+        </button>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="resumo">Resumo</div>
+        <div class="tab" data-tab="header">Header</div>
+        <div class="tab" data-tab="detalhes">Detalhes</div>
+        <div class="tab" data-tab="lastros">Lastros</div>
+        <div class="tab" data-tab="trailer">Trailer</div>
+      </div>
+
+      <div class="tab-content active" id="resumo">
+        <div class="stats-container" id="statsContainer"></div>
+      </div>
+
+      <div class="tab-content" id="header"></div>
+
+      <div class="tab-content" id="detalhes">
+        <div class="filters" id="detalhesFilters"></div>
+        <div class="table-container"></div>
+        <div class="pagination"></div>
+      </div>
+
+      <div class="tab-content" id="lastros">
+        <div class="filters" id="lastrosFilters"></div>
+        <div class="table-container"></div>
+        <div class="pagination"></div>
+      </div>
+
+      <div class="tab-content" id="trailer"></div>
+    </div>
+  </div>
+
+  <script>
+    // Elementos do DOM
+    const fileInput = document.getElementById("fileInput");
+    const uploadArea = document.getElementById("uploadArea");
+    const uploadButton = document.getElementById("uploadButton");
+    const outputSection = document.getElementById("outputSection");
+    const feedback = document.getElementById("feedback");
+    const loader = document.getElementById("loader");
+    const clearButton = document.getElementById("clearButton");
+    const exportButton = document.getElementById("exportButton");
+    const tabs = document.querySelectorAll(".tab");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    // Configuração de paginação
+    const ITEMS_PER_PAGE = 10;
+    let currentPage = 1;
+    let totalPages = 1;
+    let cnabData = null;
+
+    // Event Listeners
+    fileInput.addEventListener("change", handleFile);
+    uploadButton.addEventListener("click", () => fileInput.click());
+    clearButton.addEventListener("click", clearData);
+    exportButton.addEventListener("click", exportToCSV);
+
+    // Tabs
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tabId = tab.getAttribute("data-tab");
+        
+        // Ativa a tab clicada
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        
+        // Ativa o conteúdo da tab
+        tabContents.forEach(content => {
+          content.classList.remove("active");
+          if (content.id === tabId) {
+            content.classList.add("active");
+          }
+        });
+      });
+    });
+
+    // Drag and Drop
+    uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", () => {
+      uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("dragover");
+      
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile({ target: fileInput });
+      }
+    });
+
+    // Função para lidar com o upload de arquivo
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Validação do tipo de arquivo
+      if (!file.name.match(/\.(txt|rem|REM)$/)) {
+        showFeedback("Por favor, selecione um arquivo .txt ou .rem", "error");
+        return;
+      }
+
+      showLoader(true);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          const parsed = parseCnab(content);
+          cnabData = parsed;
+          renderOutput(parsed);
+          showLoader(false);
+          showFeedback("Arquivo processado com sucesso!", "success");
+          outputSection.style.display = "block";
+        } catch (error) {
+          showLoader(false);
+          showFeedback("Erro ao processar o arquivo: " + error.message, "error");
+          console.error(error);
+        }
+      };
+      
+      reader.onerror = () => {
+        showLoader(false);
+        showFeedback("Erro ao ler o arquivo", "error");
+      };
+      
+      reader.readAsText(file);
+    }
+
+    // Função para parse do arquivo CNAB baseado no manual
+    function parseCnab(content) {
+      const lines = content.split(/\r?\n/).filter(l => l.trim() !== "");
+      const result = { 
+        header: null, 
+        detalhes: [], 
+        lastros: [], 
+        trailer: null,
+        resumo: {
+          totalRegistros: lines.length,
+          totalDetalhes: 0,
+          totalLastros: 0,
+          valorTotal: 0
+        }
+      };
+
+      for (const line of lines) {
+        if (line.length < 444) continue; // Ignora linhas com tamanho incorreto
+        
+        const tipo = line[0];
+
+        if (tipo === "0") {
+          // Registro Header
+          result.header = {
+            identificacaoRegistro: line.substring(0, 1),
+            identificacaoArquivoRemessa: line.substring(1, 2),
+            literalRemessa: line.substring(2, 9).trim(),
+            codigoServico: line.substring(9, 11),
+            literalServico: line.substring(11, 26).trim(),
+            codigoOriginador: line.substring(26, 46).trim(),
+            nomeOriginador: line.substring(46, 76).trim(),
+            numeroBanco: line.substring(76, 79),
+            nomeBanco: line.substring(79, 94).trim(),
+            dataGravacaoArquivo: line.substring(94, 100),
+            branco1: line.substring(100, 108),
+            identificacaoSistema: line.substring(108, 110),
+            numeroSequencialArquivo: line.substring(110, 117),
+            numeroBancoCedente: line.substring(117, 120),
+            numeroAgenciaBanco: line.substring(120, 125),
+            digitoVerificadorAgencia: line.substring(125, 126),
+            numeroContaCorrente: line.substring(126, 138),
+            digitoVerificadorConta: line.substring(138, 139),
+            branco2: line.substring(139, 438),
+            numeroSequencialRegistro: line.substring(438, 444)
+          };
+        }
+
+        if (tipo === "1") {
+          // Registro Detalhe
+          const detalhe = {
+            identificacaoRegistro: line.substring(0, 1),
+            dataCarencia: line.substring(1, 7),
+            tipoJuros: line.substring(7, 8),
+            branco1: line.substring(8, 10),
+            taxaJuros: line.substring(10, 20),
+            coobrigacao: line.substring(20, 22),
+            caracteristicaEspecial: line.substring(22, 24),
+            modalidadeOperacao: line.substring(24, 28),
+            naturezaOperacao: line.substring(28, 30),
+            origemRecurso: line.substring(30, 34),
+            classeRiscoOperacao: line.substring(34, 36),
+            zeros: line.substring(36, 37),
+            numeroControleParticipante: line.substring(37, 62).trim(),
+            numeroBanco: line.substring(62, 65),
+            branco2: line.substring(65, 70),
+            branco3: line.substring(70, 81),
+            branco4: line.substring(81, 82),
+            valorPago: line.substring(82, 92),
+            condicaoEmissaoPapeleta: line.substring(92, 93),
+            identificacaoEmissaoPapeleta: line.substring(93, 94),
+            dataLiquidacao: line.substring(94, 100),
+            identificacaoOperacaoBanco: line.substring(100, 104),
+            indicadorRateioCredito: line.substring(104, 105),
+            enderecamentoAvisoDebito: line.substring(105, 106),
+            branco5: line.substring(106, 108),
+            identificacaoOcorrencia: line.substring(108, 110),
+            numeroDocumento: line.substring(110, 120).trim(),
+            dataVencimentoTitulo: line.substring(120, 126),
+            valorTitulo: (parseFloat(line.substring(126, 139)) / 100).toFixed(2),
+            bancoEncarregadoCobranca: line.substring(139, 142),
+            agenciaDepositaria: line.substring(142, 147),
+            especieTitulo: line.substring(147, 149),
+            identificacao: line.substring(149, 150),
+            dataEmissaoTitulo: line.substring(150, 156),
+            primeiraInstrucao: line.substring(156, 158),
+            segundaInstrucao: line.substring(158, 159),
+            tipoPessoaCedente: line.substring(159, 161),
+            jurosMora: line.substring(161, 173),
+            numeroTermoCessao: line.substring(173, 192).trim(),
+            valorPresenteParcela: (parseFloat(line.substring(192, 205)) / 100).toFixed(2),
+            valorAbatimento: (parseFloat(line.substring(205, 218)) / 100).toFixed(2),
+            identificacaoTipoInscricaoSacado: line.substring(218, 220),
+            numeroInscricaoSacado: line.substring(220, 234),
+            nomeSacado: line.substring(234, 274).trim(),
+            enderecoCompleto: line.substring(274, 314).trim(),
+            numeroNotaFiscalDuplicata: line.substring(314, 323),
+            numeroSerieNotaFiscalDuplicata: line.substring(323, 326),
+            cep: line.substring(326, 334),
+            cedente: line.substring(334, 394).trim(),
+            chaveNota: line.substring(394, 438).trim(),
+            numeroSequencialRegistro: line.substring(438, 444)
+          };
+          
+          result.detalhes.push(detalhe);
+          result.resumo.totalDetalhes++;
+          result.resumo.valorTotal += parseFloat(detalhe.valorPresenteParcela);
+        }
+
+        if (tipo === "3") {
+          // Registro Lastro
+          const lastro = {
+            identificacaoRegistro: line.substring(0, 1),
+            dataEmissao: line.substring(1, 7),
+            dataVencimento: line.substring(7, 13),
+            valorNominal: (parseFloat(line.substring(13, 26)) / 100).toFixed(2),
+            valorTotalPedido: (parseFloat(line.substring(26, 39)) / 100).toFixed(2),
+            valorNotaFiscal: (parseFloat(line.substring(39, 50)) / 100).toFixed(2),
+            identificacaoTipoRecebivelLastro: line.substring(50, 52),
+            tipoLastroPerformado: line.substring(52, 54),
+            numeroTituloLastro: line.substring(54, 64).trim(),
+            numeroPedido: line.substring(64, 79).trim(),
+            identificacaoTipoInscricaoSacado: line.substring(79, 81),
+            numeroInscricaoSacado: line.substring(81, 95),
+            nomeSacado: line.substring(95, 135).trim(),
+            enderecoCompleto: line.substring(135, 175).trim(),
+            cep: line.substring(175, 183),
+            codigoVerificacaoNFS: line.substring(183, 215).trim(),
+            inscricaoMunicipalPrestador: line.substring(215, 230).trim(),
+            codigoMunicipio: line.substring(230, 237).trim(),
+            numeroNotaFiscal: line.substring(237, 257).trim(),
+            chaveAcessoNFE: line.substring(257, 301).trim(),
+            cedente: line.substring(301, 361).trim(),
+            branco: line.substring(361, 438),
+            numeroSequencialRegistro: line.substring(438, 444)
+          };
+          
+          result.lastros.push(lastro);
+          result.resumo.totalLastros++;
+        }
+
+        if (tipo === "9") {
+          // Registro Trailler
+          result.trailer = {
+            identificacaoRegistro: line.substring(0, 1),
+            branco: line.substring(1, 438),
+            numeroSequencialRegistro: line.substring(438, 444)
+          };
+        }
+      }
+      
+      return result;
+    }
+
+    // Função para renderizar a saída
+    function renderOutput(data) {
+      // Renderiza o resumo
+      renderResumo(data.resumo);
+      
+      // Renderiza o header
+      renderHeader(data.header);
+      
+      // Renderiza os detalhes
+      renderDetalhes(data.detalhes);
+      
+      // Renderiza os lastros
+      renderLastros(data.lastros);
+      
+      // Renderiza o trailer
+      renderTrailer(data.trailer);
+    }
+
+    // Função para renderizar o resumo
+    function renderResumo(resumo) {
+      const statsContainer = document.getElementById("statsContainer");
+      statsContainer.innerHTML = "";
+      
+      const stats = [
+        { label: "Total de Registros", value: resumo.totalRegistros },
+        { label: "Total de Detalhes", value: resumo.totalDetalhes },
+        { label: "Total de Lastros", value: resumo.totalLastros },
+        { label: "Valor Total (R$)", value: resumo.valorTotal.toFixed(2) }
+      ];
+      
+      stats.forEach(stat => {
+        const statCard = document.createElement("div");
+        statCard.className = "stat-card";
+        
+        const statValue = document.createElement("div");
+        statValue.className = "stat-value";
+        statValue.textContent = stat.value;
+        
+        const statLabel = document.createElement("div");
+        statLabel.className = "stat-label";
+        statLabel.textContent = stat.label;
+        
+        statCard.appendChild(statValue);
+        statCard.appendChild(statLabel);
+        statsContainer.appendChild(statCard);
+      });
+    }
+
+    // Função para renderizar o header
+    function renderHeader(header) {
+      const headerTab = document.getElementById("header");
+      headerTab.innerHTML = "";
+      
+      if (!header) {
+        headerTab.innerHTML = "<p>Nenhum registro Header encontrado.</p>";
+        return;
+      }
+      
+      const infoCard = document.createElement("div");
+      infoCard.className = "info-card";
+      
+      const title = document.createElement("h3");
+      title.textContent = "Registro Header";
+      infoCard.appendChild(title);
+      
+      const grid = document.createElement("div");
+      grid.className = "info-grid";
+      
+      // Campos importantes do header
+      const campos = [
+        { label: "Literal Remessa", value: header.literalRemessa },
+        { label: "Código do Originador", value: header.codigoOriginador },
+        { label: "Nome do Originador", value: header.nomeOriginador },
+        { label: "Número do Banco", value: header.numeroBanco },
+        { label: "Nome do Banco", value: header.nomeBanco },
+        { label: "Data de Gravação", value: formatarData(header.dataGravacaoArquivo) },
+        { label: "Identificação do Sistema", value: header.identificacaoSistema },
+        { label: "Número Sequencial do Arquivo", value: header.numeroSequencialArquivo }
+      ];
+      
+      campos.forEach(campo => {
+        const item = document.createElement("div");
+        item.className = "info-item";
+        
+        const label = document.createElement("div");
+        label.className = "info-label";
+        label.textContent = campo.label;
+        
+        const value = document.createElement("div");
+        value.className = "info-value";
+        value.textContent = campo.value;
+        
+        item.appendChild(label);
+        item.appendChild(value);
+        grid.appendChild(item);
+      });
+      
+      infoCard.appendChild(grid);
+      headerTab.appendChild(infoCard);
+    }
+
+    // Função para renderizar os detalhes
+    function renderDetalhes(detalhes) {
+      const detalhesTab = document.getElementById("detalhes");
+      const filtersContainer = document.getElementById("detalhesFilters");
+      const tableContainer = detalhesTab.querySelector(".table-container");
+      const paginationContainer = detalhesTab.querySelector(".pagination");
+      
+      // Limpa o conteúdo anterior
+      filtersContainer.innerHTML = "";
+      tableContainer.innerHTML = "";
+      paginationContainer.innerHTML = "";
+      
+      if (detalhes.length === 0) {
+        tableContainer.innerHTML = "<p>Nenhum registro Detalhe encontrado.</p>";
+        return;
+      }
+      
+      // Adiciona filtros
+      const sacadoFilter = document.createElement("div");
+      sacadoFilter.className = "filter-group";
+      
+      const sacadoLabel = document.createElement("label");
+      sacadoLabel.className = "filter-label";
+      sacadoLabel.textContent = "Filtrar por Sacado:";
+      
+      const sacadoInput = document.createElement("input");
+      sacadoInput.className = "filter-input";
+      sacadoInput.type = "text";
+      sacadoInput.placeholder = "Digite o nome do sacado";
+      sacadoInput.addEventListener("input", (e) => filterTable("detalhes", e.target.value));
+      
+      sacadoFilter.appendChild(sacadoLabel);
+      sacadoFilter.appendChild(sacadoInput);
+      filtersContainer.appendChild(sacadoFilter);
+      
+      // Adiciona a tabela
+      const table = document.createElement("table");
+      table.id = "detalhes-table";
+      
+      // Cabeçalho da tabela
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      
+      const headers = [
+        "Nº Controle", "Documento", "Vencimento", "Valor Título", 
+        "Valor Aquisição", "Sacado", "Espécie Título", "Ocorrência"
+      ];
+      
+      headers.forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+      });
+      
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Corpo da tabela
+      const tbody = document.createElement("tbody");
+      tbody.id = "detalhes-tbody";
+      
+      // Adiciona as linhas da tabela (limitado pela paginação)
+      const startIndex = 0;
+      const endIndex = Math.min(detalhes.length, ITEMS_PER_PAGE);
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const row = createDetalheRow(detalhes[i]);
+        tbody.appendChild(row);
+      }
+      
+      table.appendChild(tbody);
+      tableContainer.appendChild(table);
+      
+      // Adiciona paginação
+      totalPages = Math.ceil(detalhes.length / ITEMS_PER_PAGE);
+      currentPage = 1;
+      
+      const pagination = createPagination("detalhes", detalhes.length);
+      paginationContainer.appendChild(pagination);
+    }
+
+    // Função para criar uma linha da tabela de detalhes
+    function createDetalheRow(detalhe) {
+      const row = document.createElement("tr");
+      
+      const controleCell = document.createElement("td");
+      controleCell.textContent = detalhe.numeroControleParticipante;
+      
+      const documentoCell = document.createElement("td");
+      documentoCell.textContent = detalhe.numeroDocumento;
+      
+      const vencimentoCell = document.createElement("td");
+      vencimentoCell.textContent = formatarData(detalhe.dataVencimentoTitulo);
+      
+      const valorTituloCell = document.createElement("td");
+      valorTituloCell.textContent = `R$ ${detalhe.valorTitulo}`;
+      
+      const valorAquisicaoCell = document.createElement("td");
+      valorAquisicaoCell.textContent = `R$ ${detalhe.valorPresenteParcela}`;
+      
+      const sacadoCell = document.createElement("td");
+      sacadoCell.textContent = detalhe.nomeSacado;
+      
+      const especieCell = document.createElement("td");
+      especieCell.textContent = getDescricaoEspecieTitulo(detalhe.especieTitulo);
+      
+      const ocorrenciaCell = document.createElement("td");
+      ocorrenciaCell.textContent = getDescricaoOcorrencia(detalhe.identificacaoOcorrencia);
+      
+      row.appendChild(controleCell);
+      row.appendChild(documentoCell);
+      row.appendChild(vencimentoCell);
+      row.appendChild(valorTituloCell);
+      row.appendChild(valorAquisicaoCell);
+      row.appendChild(sacadoCell);
+      row.appendChild(especieCell);
+      row.appendChild(ocorrenciaCell);
+      
+      return row;
+    }
+
+    // Função para renderizar os lastros
+    function renderLastros(lastros) {
+      const lastrosTab = document.getElementById("lastros");
+      const filtersContainer = document.getElementById("lastrosFilters");
+      const tableContainer = lastrosTab.querySelector(".table-container");
+      const paginationContainer = lastrosTab.querySelector(".pagination");
+      
+      // Limpa o conteúdo anterior
+      filtersContainer.innerHTML = "";
+      tableContainer.innerHTML = "";
+      paginationContainer.innerHTML = "";
+      
+      if (lastros.length === 0) {
+        tableContainer.innerHTML = "<p>Nenhum registro Lastro encontrado.</p>";
+        return;
+      }
+      
+      // Adiciona filtros
+      const sacadoFilter = document.createElement("div");
+      sacadoFilter.className = "filter-group";
+      
+      const sacadoLabel = document.createElement("label");
+      sacadoLabel.className = "filter-label";
+      sacadoLabel.textContent = "Filtrar por Sacado:";
+      
+      const sacadoInput = document.createElement("input");
+      sacadoInput.className = "filter-input";
+      sacadoInput.type = "text";
+      sacadoInput.placeholder = "Digite o nome do sacado";
+      sacadoInput.addEventListener("input", (e) => filterTable("lastros", e.target.value));
+      
+      sacadoFilter.appendChild(sacadoLabel);
+      sacadoFilter.appendChild(sacadoInput);
+      filtersContainer.appendChild(sacadoFilter);
+      
+      // Adiciona a tabela
+      const table = document.createElement("table");
+      table.id = "lastros-table";
+      
+      // Cabeçalho da tabela
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      
+      const headers = [
+        "Nº Título/Lastro", "Emissão", "Vencimento", "Valor Nominal", 
+        "Valor Nota Fiscal", "Sacado", "Tipo Recebível", "Tipo Lastro"
+      ];
+      
+      headers.forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+      });
+      
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Corpo da tabela
+      const tbody = document.createElement("tbody");
+      tbody.id = "lastros-tbody";
+      
+      // Adiciona as linhas da tabela (limitado pela paginação)
+      const startIndex = 0;
+      const endIndex = Math.min(lastros.length, ITEMS_PER_PAGE);
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const row = createLastroRow(lastros[i]);
+        tbody.appendChild(row);
+      }
+      
+      table.appendChild(tbody);
+      tableContainer.appendChild(table);
+      
+      // Adiciona paginação
+      totalPages = Math.ceil(lastros.length / ITEMS_PER_PAGE);
+      currentPage = 1;
+      
+      const pagination = createPagination("lastros", lastros.length);
+      paginationContainer.appendChild(pagination);
+    }
+
+    // Função para criar uma linha da tabela de lastros
+    function createLastroRow(lastro) {
+      const row = document.createElement("tr");
+      
+      const numeroCell = document.createElement("td");
+      numeroCell.textContent = lastro.numeroTituloLastro;
+      
+      const emissaoCell = document.createElement("td");
+      emissaoCell.textContent = formatarData(lastro.dataEmissao);
+      
+      const vencimentoCell = document.createElement("td");
+      vencimentoCell.textContent = formatarData(lastro.dataVencimento);
+      
+      const valorNominalCell = document.createElement("td");
+      valorNominalCell.textContent = `R$ ${lastro.valorNominal}`;
+      
+      const valorNotaCell = document.createElement("td");
+      valorNotaCell.textContent = `R$ ${lastro.valorNotaFiscal}`;
+      
+      const sacadoCell = document.createElement("td");
+      sacadoCell.textContent = lastro.nomeSacado;
+      
+      const tipoRecebivelCell = document.createElement("td");
+      tipoRecebivelCell.textContent = getDescricaoTipoRecebivel(lastro.identificacaoTipoRecebivelLastro);
+      
+      const tipoLastroCell = document.createElement("td");
+      tipoLastroCell.textContent = getDescricaoTipoLastro(lastro.tipoLastroPerformado);
+      
+      row.appendChild(numeroCell);
+      row.appendChild(emissaoCell);
+      row.appendChild(vencimentoCell);
+      row.appendChild(valorNominalCell);
+      row.appendChild(valorNotaCell);
+      row.appendChild(sacadoCell);
+      row.appendChild(tipoRecebivelCell);
+      row.appendChild(tipoLastroCell);
+      
+      return row;
+    }
+
+    // Função para renderizar o trailer
+    function renderTrailer(trailer) {
+      const trailerTab = document.getElementById("trailer");
+      trailerTab.innerHTML = "";
+      
+      if (!trailer) {
+        trailerTab.innerHTML = "<p>Nenhum registro Trailer encontrado.</p>";
+        return;
+      }
+      
+      const infoCard = document.createElement("div");
+      infoCard.className = "info-card";
+      
+      const title = document.createElement("h3");
+      title.textContent = "Registro Trailer";
+      infoCard.appendChild(title);
+      
+      const grid = document.createElement("div");
+      grid.className = "info-grid";
+      
+      // Campos do trailer
+      const campos = [
+        { label: "Identificação do Registro", value: trailer.identificacaoRegistro },
+        { label: "Número Sequencial do Registro", value: trailer.numeroSequencialRegistro }
+      ];
+      
+      campos.forEach(campo => {
+        const item = document.createElement("div");
+        item.className = "info-item";
+        
+        const label = document.createElement("div");
+        label.className = "info-label";
+        label.textContent = campo.label;
+        
+        const value = document.createElement("div");
+        value.className = "info-value";
+        value.textContent = campo.value;
+        
+        item.appendChild(label);
+        item.appendChild(value);
+        grid.appendChild(item);
+      });
+      
+      infoCard.appendChild(grid);
+      trailerTab.appendChild(infoCard);
+    }
+
+    // Função para criar paginação
+    function createPagination(tableId, totalItems) {
+      const pagination = document.createElement("div");
+      pagination.className = "pagination";
+      
+      // Botão Anterior
+      const prevButton = document.createElement("button");
+      prevButton.innerHTML = '<i class="material-icons">chevron_left</i>';
+      prevButton.addEventListener("click", () => changePage(tableId, -1));
+      prevButton.disabled = true;
+      
+      // Informações da página
+      const pageInfo = document.createElement("div");
+      pageInfo.className = "page-info";
+      totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      pageInfo.textContent = `Página 1 de ${totalPages}`;
+      
+      // Botão Próximo
+      const nextButton = document.createElement("button");
+      nextButton.innerHTML = '<i class="material-icons">chevron_right</i>';
+      nextButton.addEventListener("click", () => changePage(tableId, 1));
+      nextButton.disabled = totalPages <= 1;
+      
+      pagination.appendChild(prevButton);
+      pagination.appendChild(pageInfo);
+      pagination.appendChild(nextButton);
+      
+      return pagination;
+    }
+
+    // Função para mudar de página
+    function changePage(tableId, direction) {
+      const table = document.getElementById(`${tableId}-table`);
+      const tbody = document.getElementById(`${tableId}-tbody`);
+      const pagination = table.parentElement.nextElementSibling;
+      const pageInfo = pagination.querySelector(".page-info");
+      const prevButton = pagination.querySelector("button:first-child");
+      const nextButton = pagination.querySelector("button:last-child");
+      
+      // Atualiza a página atual
+      currentPage += direction;
+      
+      // Determina os dados a serem exibidos
+      let data;
+      if (tableId === "detalhes") {
+        data = cnabData.detalhes;
+      } else if (tableId === "lastros") {
+        data = cnabData.lastros;
+      } else {
+        return;
+      }
+      
+      // Calcula os índices de início e fim
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+      
+      // Limpa o corpo da tabela
+      tbody.innerHTML = "";
+      
+      // Adiciona as novas linhas
+      for (let i = startIndex; i < endIndex; i++) {
+        const row = tableId === "detalhes" 
+          ? createDetalheRow(data[i])
+          : createLastroRow(data[i]);
+        tbody.appendChild(row);
+      }
+      
+      // Atualiza as informações da página
+      pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+      
+      // Atualiza o estado dos botões
+      prevButton.disabled = currentPage === 1;
+      nextButton.disabled = currentPage === totalPages;
+    }
+
+    // Função para filtrar a tabela
+    function filterTable(tableId, filterValue) {
+      const table = document.getElementById(`${tableId}-table`);
+      const tbody = document.getElementById(`${tableId}-tbody`);
+      const rows = tbody.querySelectorAll("tr");
+      
+      // Se não houver valor de filtro, mostra todas as linhas
+      if (!filterValue) {
+        rows.forEach(row => {
+          row.style.display = "";
+        });
+        return;
+      }
+      
+      // Filtra as linhas com base no valor do filtro
+      const lowerFilter = filterValue.toLowerCase();
+      rows.forEach(row => {
+        const sacadoCell = tableId === "detalhes" ? row.cells[5] : row.cells[5]; // A coluna do sacado é a sexta (índice 5)
+        if (sacadoCell && sacadoCell.textContent.toLowerCase().includes(lowerFilter)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    }
+
+    // Função para limpar os dados
+    function clearData() {
+      outputSection.style.display = "none";
+      fileInput.value = "";
+      cnabData = null;
+      hideFeedback();
+      
+      // Limpa todas as abas
+      document.getElementById("resumo").innerHTML = '<div class="stats-container" id="statsContainer"></div>';
+      document.getElementById("header").innerHTML = "";
+      document.getElementById("detalhes").innerHTML = `
+        <div class="filters" id="detalhesFilters"></div>
+        <div class="table-container"></div>
+        <div class="pagination"></div>
+      `;
+      document.getElementById("lastros").innerHTML = `
+        <div class="filters" id="lastrosFilters"></div>
+        <div class="table-container"></div>
+        <div class="pagination"></div>
+      `;
+      document.getElementById("trailer").innerHTML = "";
+      
+      // Reseta as abas
+      tabs.forEach(tab => tab.classList.remove("active"));
+      tabContents.forEach(content => content.classList.remove("active"));
+      
+      tabs[0].classList.add("active");
+      tabContents[0].classList.add("active");
+    }
+
+    // Função para exportar para CSV
+    function exportToCSV() {
+      if (!cnabData) return;
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // Adiciona o header
+      if (cnabData.header) {
+        csvContent += "HEADER\n";
+        const headerFields = [
+          "Identificação do Registro", "Identificação do Arquivo Remessa", "Literal Remessa",
+          "Código de Serviço", "Literal Serviço", "Código do Originador", "Nome do Originador",
+          "Número do Banco", "Nome do Banco", "Data da Gravação do Arquivo", "Identificação do Sistema",
+          "Número Sequencial do Arquivo"
+        ];
+        
+        csvContent += headerFields.join(",") + "\n";
+        
+        const headerValues = [
+          cnabData.header.identificacaoRegistro,
+          cnabData.header.identificacaoArquivoRemessa,
+          cnabData.header.literalRemessa,
+          cnabData.header.codigoServico,
+          cnabData.header.literalServico,
+          cnabData.header.codigoOriginador,
+          cnabData.header.nomeOriginador,
+          cnabData.header.numeroBanco,
+          cnabData.header.nomeBanco,
+          formatarData(cnabData.header.dataGravacaoArquivo),
+          cnabData.header.identificacaoSistema,
+          cnabData.header.numeroSequencialArquivo
+        ];
+        
+        csvContent += headerValues.join(",") + "\n\n";
+      }
+      
+      // Adiciona os detalhes
+      if (cnabData.detalhes.length > 0) {
+        csvContent += "DETALHES\n";
+        const detalheFields = [
+          "Nº Controle Participante", "Nº Documento", "Data Vencimento", "Valor Título",
+          "Valor Presente Parcela", "Nome Sacado", "Espécie Título", "Identificação Ocorrência"
+        ];
+        
+        csvContent += detalheFields.join(",") + "\n";
+        
+        cnabData.detalhes.forEach(detalhe => {
+          const detalheValues = [
+            detalhe.numeroControleParticipante,
+            detalhe.numeroDocumento,
+            formatarData(detalhe.dataVencimentoTitulo),
+            detalhe.valorTitulo,
+            detalhe.valorPresenteParcela,
+            detalhe.nomeSacado,
+            getDescricaoEspecieTitulo(detalhe.especieTitulo),
+            getDescricaoOcorrencia(detalhe.identificacaoOcorrencia)
+          ];
+          
+          csvContent += detalheValues.join(",") + "\n";
+        });
+        
+        csvContent += "\n";
+      }
+      
+      // Adiciona os lastros
+      if (cnabData.lastros.length > 0) {
+        csvContent += "LASTROS\n";
+        const lastroFields = [
+          "Nº Título/Lastro", "Data Emissão", "Data Vencimento", "Valor Nominal",
+          "Valor Nota Fiscal", "Nome Sacado", "Tipo Recebível", "Tipo Lastro"
+        ];
+        
+        csvContent += lastroFields.join(",") + "\n";
+        
+        cnabData.lastros.forEach(lastro => {
+          const lastroValues = [
+            lastro.numeroTituloLastro,
+            formatarData(lastro.dataEmissao),
+            formatarData(lastro.dataVencimento),
+            lastro.valorNominal,
+            lastro.valorNotaFiscal,
+            lastro.nomeSacado,
+            getDescricaoTipoRecebivel(lastro.identificacaoTipoRecebivelLastro),
+            getDescricaoTipoLastro(lastro.tipoLastroPerformado)
+          ];
+          
+          csvContent += lastroValues.join(",") + "\n";
+        });
+        
+        csvContent += "\n";
+      }
+      
+      // Adiciona o trailer
+      if (cnabData.trailer) {
+        csvContent += "TRAILER\n";
+        const trailerFields = [
+          "Identificação do Registro", "Número Sequencial do Registro"
+        ];
+        
+        csvContent += trailerFields.join(",") + "\n";
+        
+        const trailerValues = [
+          cnabData.trailer.identificacaoRegistro,
+          cnabData.trailer.numeroSequencialRegistro
+        ];
+        
+        csvContent += trailerValues.join(",") + "\n";
+      }
+      
+      // Cria o link para download
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "cnab_444_data.csv");
+      document.body.appendChild(link);
+      
+      // Dispara o download
+      link.click();
+      
+      // Remove o link
+      document.body.removeChild(link);
+    }
+
+    // Função para mostrar feedback
+    function showFeedback(message, type) {
+      const feedbackIcon = feedback.querySelector("i");
+      const feedbackText = feedback.querySelector("span");
+      
+      feedback.className = `feedback ${type}`;
+      feedbackIcon.textContent = type === "success" ? "check_circle" : "error";
+      feedbackText.textContent = message;
+      
+      feedback.style.display = "flex";
+      
+      // Esconde o feedback após 5 segundos
+      setTimeout(hideFeedback, 5000);
+    }
+
+    // Função para esconder feedback
+    function hideFeedback() {
+      feedback.style.display = "none";
+    }
+
+    // Função para mostrar/esconder o loader
+    function showLoader(show) {
+      loader.style.display = show ? "block" : "none";
+    }
+
+    // Função para formatar data (DDMMAA para DD/MM/AA)
+    function formatarData(data) {
+      if (!data || data.length !== 6) return data;
+      
+      const dia = data.substring(0, 2);
+      const mes = data.substring(2, 4);
+      const ano = data.substring(4, 6);
+      
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    // Função para obter descrição da espécie de título
+    function getDescricaoEspecieTitulo(codigo) {
+      const especies = {
+        "01": "Duplicata",
+        "02": "Nota Promissória",
+        "03": "Nota de Seguro",
+        "51": "Cheque",
+        "60": "Contrato"
+      };
+      
+      return especies[codigo] || código;
+    }
+
+    // Função para obter descrição da ocorrência
+    function getDescricaoOcorrencia(codigo) {
+      const ocorrencias = {
+        "01": "Remessa - aquisição de títulos",
+        "06": "Alteração de vencimento",
+        "14": "Pagamento parcial",
+        "71": "Baixa por recompra - liquidação para consultoria",
+        "73": "Recompra parcial com adiantamento",
+        "74": "Baixa por recompra - liquidação para cedente"
+      };
+      
+      return ocorrencias[codigo] || código;
+    }
+
+    // Função para obter descrição do tipo de recebível/lastro
+    function getDescricaoTipoRecebivel(codigo) {
+      const tipos = {
+        "01": "Duplicata",
+        "02": "Nota Promissória",
+        "51": "Cheque",
+        "60": "Contrato"
+      };
+      
+      return tipos[codigo] || código;
+    }
+
+    // Função para obter descrição do tipo de lastro performado
+    function getDescricaoTipoLastro(codigo) {
+      const tipos = {
+        "N": "Serviços Não Performado",
+        "SP": "Serviços Performado",
+        "BN": "Bens Não Performado",
+        "BP": "Bens Performado",
+        "MN": "Bens e Serviços Não Performado",
+        "MP": "Bens e Serviços Performado"
+      };
+      
+      return tipos[codigo] || código;
+    }
+  </script>
+</body>
+</html>
