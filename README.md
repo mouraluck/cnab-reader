@@ -1,6 +1,4 @@
-Compreendi! Vou criar um arquivo README.md em formato Markdown para o projeto Leitor CNAB 444.
-
-# README.md - Leitor CNAB 444
+# Leitor CNAB 444
 
 <div align="center">
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5">
